@@ -1,1 +1,48 @@
-/qlib
+# 忽略所有 .log 文件
+*.log
+ 
+# 忽略所有 .tmp 文件，但跟踪一个名为 temp.tmp 的文件
+*.tmp
+!temp.tmp
+ 
+# 忽略所有在 build/ 目录下的所有文件
+build/
+ 
+# 忽略所有在 doc/ 目录下的 .txt 文件，但不包括 doc/important.txt
+doc/*.txt
+!doc/important.txt
+
+#忽略qlib目录
+qlib/
+
+# 忽略所有 .out 文件
+*.out
+
+# 忽略所有 .pyc 文件
+*.pyc
+
+#忽略tensorboard日志文件
+myTransformer/runs
+MASTER/runs
+DTML/runs
+
+#忽略tensorboard日志文件
+myTransformer/params_log
+MASTER/params_log
+DTML/params_log
+
+# 忽略所有 .ipynb_checkpoints 文件
+.ipynb_checkpoints
+
+# 忽略所有 .vscode 目录
+MASTER/.vscode/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# C extensions
+*.so
+
+*.lock
+
+MASTER/data/
