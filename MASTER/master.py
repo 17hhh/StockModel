@@ -19,9 +19,6 @@ class PositionalEncoding(nn.Module):
         self.register_buffer("pe", pe)
 
     def forward(self, x):
-        # print('------PositionalEncoding forward ---------')
-        # print(x.shape)
-        # x:(753,8,256);pe:(100,256)
         return x + self.pe[:x.shape[1], :]
 
 
@@ -100,7 +97,7 @@ class TAttention(nn.Module):
         if dropout > 0:
             for i in range(nhead):
                 self.attn_dropout.append(Dropout(p=dropout))
-        self.attn_dropout = nn.ModuleList(self.attn_dropout)
+            self.attn_dropout = nn.ModuleList(self.attn_dropout)
 
         # input LayerNorm
         self.norm1 = LayerNorm(d_model, eps=1e-5)
@@ -116,8 +113,6 @@ class TAttention(nn.Module):
         )
 
     def forward(self, x):
-        # print('---- TAttention forward ---')
-        # print(x.shape)
         x = self.norm1(x)
         q = self.qtrans(x)
         k = self.ktrans(x)
@@ -143,7 +138,6 @@ class TAttention(nn.Module):
         # FFN
         xt = x + att_output
         xt = self.norm2(xt)
-        # 753,8,256
         att_output = xt + self.ffn(xt)
 
         return att_output
@@ -157,9 +151,7 @@ class Gate(nn.Module):
         self.t = beta
 
     def forward(self, gate_input):
-        # gate_input 753*63
         output = self.trans(gate_input)
-        # 753*158
         output = torch.softmax(output/self.t, dim=-1)
         return self.d_output*output
 
@@ -170,11 +162,8 @@ class TemporalAttention(nn.Module):
         self.trans = nn.Linear(d_model, d_model, bias=False)
 
     def forward(self, z):
-        # 753,8,256
         h = self.trans(z) # [N, T, D]
-        # 753,256,1
         query = h[:, -1, :].unsqueeze(-1)
-        # 753,1,8
         lam = torch.matmul(h, query).squeeze(-1)  # [N, T, D] --> [N, T]
         lam = torch.softmax(lam, dim=1).unsqueeze(1)
         output = torch.matmul(lam, z).squeeze(1)  # [N, 1, T], [N, T, D] --> [N, 1, D]
@@ -182,8 +171,7 @@ class TemporalAttention(nn.Module):
 
 
 class MASTER(nn.Module):
-    def __init__(self, d_feat=158, d_model=256, t_nhead=4, s_nhead=2, T_dropout_rate=0.5, S_dropout_rate=0.5,
-                 gate_input_start_index=158, gate_input_end_index=221, beta=None):
+    def __init__(self, d_feat, d_model, t_nhead, s_nhead, T_dropout_rate, S_dropout_rate, gate_input_start_index, gate_input_end_index, beta):
         super(MASTER, self).__init__()
         # market
         self.gate_input_start_index = gate_input_start_index
@@ -205,15 +193,10 @@ class MASTER(nn.Module):
         )
 
     def forward(self, x):
-        # x: 753,8,221
-        # src: 753,8,158
         src = x[:, :, :self.gate_input_start_index] # N, T, D
-        # gate_input:753,63
         gate_input = x[:, -1, self.gate_input_start_index:self.gate_input_end_index]
-        # x:753,8,221; src: 753,8,158
         src = src * torch.unsqueeze(self.feature_gate(gate_input), dim=1)
-        # print(src.shape)
-
+       
         output = self.layers(src).squeeze(-1)
 
         return output
@@ -221,8 +204,8 @@ class MASTER(nn.Module):
 
 class MASTERModel(SequenceModel):
     def __init__(
-            self, d_feat: int = 20, d_model: int = 64, t_nhead: int = 4, s_nhead: int = 2, gate_input_start_index=None, gate_input_end_index=None,
-            T_dropout_rate=0.5, S_dropout_rate=0.5, beta=5.0, **kwargs,
+            self, d_feat, d_model, t_nhead, s_nhead, gate_input_start_index, gate_input_end_index,
+            T_dropout_rate, S_dropout_rate, beta, **kwargs,
     ):
         super(MASTERModel, self).__init__(**kwargs)
         self.d_model = d_model

@@ -1,22 +1,25 @@
 #!/bin/bash
 
 # 设置TensorBoard日志目录和端口
-LOG_DIR="~/proj/newModule/myTransformer/runs/my_experiment"  # 替换为你的TensorBoard日志目录
+# LOG_DIR="~/proj/StockModels/myTransformer/runs/my_experiment"  # 替换为你的TensorBoard日志目录
+LOG_DIR="~/proj/StockModels/MASTER/runs/my_experiment"  # 替换为你的TensorBoard日志目录
+# LOG_DIR="~/proj/StockModels/DTML/runs/my_experiment"  # 替换为你的TensorBoard日志目录
+
 PORT=6006                    # TensorBoard服务器监听的端口
 
 # 检查TensorBoard是否已安装
-if ! command -v tensorboard &> /dev/null
-then
-    echo "TensorBoard未安装。正在安装TensorBoard..."
-    pip install tensorboard  # 或者使用pip3，取决于你的Python版本
-    if [ $? -ne 0 ]; then
-        echo "TensorBoard安装失败。"
-        exit 1
-    fi
-    echo "TensorBoard安装成功。"
-else
-    echo "TensorBoard已安装。"
-fi
+# if ! command -v tensorboard &> /dev/null
+# then
+#     echo "TensorBoard未安装。正在安装TensorBoard..."
+#     pip install tensorboard  # 或者使用pip3，取决于你的Python版本
+#     if [ $? -ne 0 ]; then
+#         echo "TensorBoard安装失败。"
+#         exit 1
+#     fi
+#     echo "TensorBoard安装成功。"
+# else
+#     echo "TensorBoard已安装。"
+# fi
 
 # 启动TensorBoard服务器
 echo "正在启动TensorBoard服务器，日志目录为：$LOG_DIR，端口为：$PORT"

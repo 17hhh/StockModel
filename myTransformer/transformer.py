@@ -220,7 +220,7 @@ def train_transformer(dataloader, epoch, model):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
     # if epoch == 0:
-    #     model.load_state_dict(torch.load(f'params/transformer_model_epoch50.pkl', map_location=device, weights_only=True))
+    #     model.load_state_dict(torch.load(f'params_log/transformer_model_epoch50.pkl', map_location=device, weights_only=True))
     optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
     # for name, parameters in model.named_parameters(): 
     #     print(name, ':', parameters)
@@ -238,7 +238,7 @@ def train_transformer(dataloader, epoch, model):
         optimizer.step()
         # print(f'batch_idx:{batch_idx}, loss: {loss.item()},feature: {feature.shape}')
     if(epoch == 50):
-        torch.save(model.state_dict(), f'params/transformer_model_epoch{epoch}.pkl')
+        torch.save(model.state_dict(), f'params_log/transformer_model_epoch{epoch}.pkl')
         
     return float(np.mean(losses))
 
