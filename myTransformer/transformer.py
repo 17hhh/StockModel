@@ -4,6 +4,7 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.modules.normalization import LayerNorm
+from base_model import SequenceModel
 
 class Attention(nn.Module):
     """
@@ -191,9 +192,9 @@ class TemporalAttention(nn.Module):
         output = torch.matmul(lam, z).squeeze(1)  # [N, 1, T], [N, T, D] --> [N, 1, D]
         return output
     
-class TransformerModule(nn.Module):
+class Transformer(nn.Module):
     def __init__(self, d_ff=158, d_model=512, dropout=0.1, n_layers=6, device=None):
-        super(TransformerModule, self).__init__()
+        super(Transformer, self).__init__()
         self.d_model = d_model
         self.device = device
         self.feature_layer = nn.Linear(d_ff, d_model)
@@ -215,6 +216,17 @@ class TransformerModule(nn.Module):
         output = self.output(temporal_att_out)  # [batch_size, seq_len, 1]
         return output
 
+class TransformerModel(SequenceModel):
+    def __init__(self, d_feat, d_model, n_heads, lr, **kwargs):
+        super().__init__(**kwargs)
+        self.d_feat = d_feat
+        self.d_model = d_model
+        self.n_heads = n_heads
+        self.lr = lr
+        self.init_model()
+
+    def init_model(self):
+        self.model = Transformer(d_model=self.d_model, d_ff=self.d_feat, n_heads=self.n_heads, lr=self.lr, device=self.device)
 
 def train_transformer(dataloader, epoch, model):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -244,7 +256,7 @@ def train_transformer(dataloader, epoch, model):
 
 def test_transformer(dataloader):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = TransformerModule()
+    model = Transformer()
     model.to(device)
     losses = []
     scores = []
