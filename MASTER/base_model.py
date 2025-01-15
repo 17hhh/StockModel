@@ -6,6 +6,8 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Sampler
 import torch
 import torch.optim as optim
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter('/home/hhh/proj/StockModels/MASTER/runs/my_experiment')
 
 def calc_ic(pred, label):
     df = pd.DataFrame({'pred':pred, 'label':label})
@@ -36,7 +38,7 @@ class DailyBatchSamplerRandom(Sampler):
         # data_arr (856247,222)
         self.data_source = data_source
         self.shuffle = shuffle
-        print(self.data_source.get_index())
+        # print(self.data_source.get_index())
         # calculate number of samples in each batch:[292,287,283,...,299,299]
         self.daily_count = pd.Series(index=self.data_source.get_index()).groupby("datetime").size().values
         # daily_index: [0, 292, 579, ..., 856247]
@@ -162,6 +164,10 @@ class SequenceModel():
             self.fitted = step
             if dl_valid:
                 predictions, metrics = self.predict(dl_valid)
+                # tagName_ic = 'metrics_ic_step_'+str(step)
+                # tagName_icir = 'metrics_icir_step_'+str(step)
+                # writer.add_scalars(tagName_ic, {'valid ic':metrics['IC'],'ric':metrics['RIC'], 'train_loss':train_loss}, step)
+                # writer.add_scalars(tagName_icir, {'valid icir':metrics['ICIR'],'ricir':metrics['RICIR'], 'train_loss':train_loss}, step)
                 print("Epoch %d, train_loss %.6f, valid ic %.4f, icir %.3f, rankic %.4f, rankicir %.3f." % (step, train_loss, metrics['IC'],  metrics['ICIR'],  metrics['RIC'],  metrics['RICIR']))
             else: print("Epoch %d, train_loss %.6f" % (step, train_loss))
         
