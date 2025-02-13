@@ -33,10 +33,10 @@ if universe == 'csi300':
 elif universe == 'csi800':
     beta = 2
 
-n_epoch = 15
+n_epoch = 1500
 lr = 1e-5
 GPU = 0
-train_stop_loss_thred = 0.05
+train_stop_loss_thred = 0.005
 
 
 ic = []
@@ -46,8 +46,8 @@ ricir = []
 
 # Training
 ######################################################################################
-for seed in [0,1, 2, 3, 4]:
-# for seed in [0]:
+# for seed in [0,1, 2, 3, 4]:
+for seed in [36]:
     model = MASTERModel(
         d_feat = d_feat, d_model = d_model, t_nhead = t_nhead, s_nhead = s_nhead, T_dropout_rate=dropout, S_dropout_rate=dropout,
         beta=beta, gate_input_end_index=gate_input_end_index, gate_input_start_index=gate_input_start_index,
