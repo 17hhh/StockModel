@@ -159,17 +159,28 @@ class SequenceModel():
     def fit(self, dl_train, dl_valid=None):
         train_loader = self._init_data_loader(dl_train, shuffle=True, drop_last=True)
         best_param = None
+
+        tagName_ic = 'metrics_ic_seed_42'
+        tagName_icir = 'metrics_icir_seed_42'
+        # 未训练时的数据指标
+        if dl_valid:
+            self.fitted = 0
+            predictions, metrics, valid_loss = self.predict(dl_valid)
+            writer.add_scalars(tagName_ic, {'valid ic':metrics['IC'],'ric':metrics['RIC'],
+                                                       'train_loss':0, 'valid_loss':valid_loss, 'lr': self.lr}, 0)
+            writer.add_scalars(tagName_icir, {'valid icir':metrics['ICIR'],'ricir':metrics['RICIR'], 
+                                                        'train_loss':0,'lr': self.lr}, 0)
+            print("Epoch %d, train_loss %.6f, valid_loss %.6f, valid ic %.4f, icir %.3f, rankic %.4f, rankicir %.3f." % (0, 0, valid_loss, metrics['IC'],  metrics['ICIR'],  metrics['RIC'],  metrics['RICIR']))
+        else: print("Epoch %d, train_loss %.6f" % (0, 0))
         for step in range(self.n_epochs):
             train_loss = self.train_epoch(train_loader)
             self.fitted = step
             if dl_valid:
-                predictions, metrics = self.predict(dl_valid)
-                # tagName_ic = 'metrics_ic_step_'+str(step)
-                # tagName_icir = 'metrics_icir_step_'+str(step)
-                # writer.add_scalars(tagName_ic, {'valid ic':metrics['IC'],'ric':metrics['RIC'], 'train_loss':train_loss}, step)
-                # writer.add_scalars(tagName_icir, {'valid icir':metrics['ICIR'],'ricir':metrics['RICIR'], 'train_loss':train_loss}, step)
-                print("Epoch %d, train_loss %.6f, valid ic %.4f, icir %.3f, rankic %.4f, rankicir %.3f." % (step, train_loss, metrics['IC'],  metrics['ICIR'],  metrics['RIC'],  metrics['RICIR']))
-            else: print("Epoch %d, train_loss %.6f" % (step, train_loss))
+                predictions, metrics, valid_loss = self.predict(dl_valid)
+                writer.add_scalars(tagName_ic, {'valid ic':metrics['IC'],'ric':metrics['RIC'], 'train_loss':train_loss, 'valid_loss':valid_loss, 'lr': self.lr}, step+1)
+                writer.add_scalars(tagName_icir, {'valid icir':metrics['ICIR'],'ricir':metrics['RICIR'], 'train_loss':train_loss,'lr': self.lr}, step+1)
+                print("Epoch %d, train_loss %.6f, valid_loss %.6f, valid ic %.4f, icir %.3f, rankic %.4f, rankicir %.3f." % (step+1, train_loss, valid_loss, metrics['IC'],  metrics['ICIR'],  metrics['RIC'],  metrics['RICIR']))
+            else: print("Epoch %d, train_loss %.6f" % (step+1, train_loss))
         
             if train_loss <= self.train_stop_loss_thred:
                 best_param = copy.deepcopy(self.model.state_dict())
@@ -190,6 +201,7 @@ class SequenceModel():
         preds = []
         ic = []
         ric = []
+        losses_v = []
 
         self.model.eval()
         for data in test_loader:
@@ -202,6 +214,15 @@ class SequenceModel():
 
             with torch.no_grad():
                 pred = self.model(feature.float()).detach().cpu().numpy()
+                 # for valid loss
+                #########################
+                mask_v, label_v = drop_extreme(label.to(self.device))
+                feature_v = feature[mask_v, :, :]
+                label_v = zscore(label_v) # CSZscoreNorm
+                pred_v = self.model(feature_v.float())
+                loss_v = self.loss_fn(pred_v, label_v)
+                losses_v.append(loss_v.item())
+                #########################
             preds.append(pred.ravel())
 
             daily_ic, daily_ric = calc_ic(pred, label.detach().numpy())
@@ -217,4 +238,4 @@ class SequenceModel():
             'RICIR': np.mean(ric)/np.std(ric)
         }
 
-        return predictions, metrics
+        return predictions, metrics, float(np.mean(losses_v))

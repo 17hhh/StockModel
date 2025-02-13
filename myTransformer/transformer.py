@@ -193,7 +193,7 @@ class TemporalAttention(nn.Module):
         return output
     
 class Transformer(nn.Module):
-    def __init__(self, d_ff=158, d_model=512, dropout=0.1, n_layers=6, device=None):
+    def __init__(self, d_ff, d_model, dropout, n_heads,  device=None):
         super(Transformer, self).__init__()
         self.d_model = d_model
         self.device = device
@@ -213,20 +213,23 @@ class Transformer(nn.Module):
         ffn_out = self.ffn(addNorm_out1)
         addNorm_out2 = ffn_out + self.addNorm(ffn_out)
         temporal_att_out = self.temporal_att(addNorm_out2)
-        output = self.output(temporal_att_out)  # [batch_size, seq_len, 1]
+        output = self.output(temporal_att_out).squeeze(-1)  # [batch_size, seq_len, 1]=>[batch_size, seq_len]
         return output
 
 class TransformerModel(SequenceModel):
-    def __init__(self, d_feat, d_model, n_heads, lr, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, d_feat, d_model, n_heads, dropout, **kwargs):
+        super(TransformerModel, self).__init__(**kwargs)
         self.d_feat = d_feat
         self.d_model = d_model
         self.n_heads = n_heads
-        self.lr = lr
+        self.dropout = dropout
         self.init_model()
 
     def init_model(self):
-        self.model = Transformer(d_model=self.d_model, d_ff=self.d_feat, n_heads=self.n_heads, lr=self.lr, device=self.device)
+        self.model = Transformer(d_model=self.d_model, d_ff=self.d_feat, n_heads=self.n_heads, 
+                                 dropout=self.dropout, device=self.device)
+        super(TransformerModel, self).init_model()
+
 
 def train_transformer(dataloader, epoch, model):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
