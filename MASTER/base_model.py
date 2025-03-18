@@ -7,7 +7,7 @@ from torch.utils.data import Sampler
 import torch
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
-writer = SummaryWriter('/home/hhh/proj/StockModels/MASTER/runs122/my_experiment')
+writer = SummaryWriter('/home/hhh/proj/StockModels/MASTER/runs-out/runs25312/S-2T-atten')
 
 def calc_ic(pred, label):
     df = pd.DataFrame({'pred':pred, 'label':label})
@@ -41,7 +41,8 @@ class DailyBatchSamplerRandom(Sampler):
         # print(self.data_source.get_index())
         # calculate number of samples in each batch:[292,287,283,...,299,299]
         self.daily_count = pd.Series(index=self.data_source.get_index()).groupby("datetime").size().values
-        # daily_index: [0, 292, 579, ..., 856247]
+        # daily_index: [0, 292, 579, ..., 856247]， 交易数据按日期分组，每组交易数据数量大致相同（约300个）
+        # daily_count: [292, 287, 283, ..., 299, 299]， 每组交易数据数量
         self.daily_index = np.roll(np.cumsum(self.daily_count), 1)  # calculate begin index of each batch
         self.daily_index[0] = 0
 
@@ -156,11 +157,11 @@ class SequenceModel():
         self.model.load_state_dict(torch.load(param_path, map_location=self.device))
         self.fitted = 'Previously trained.'
 
-    def fit(self, dl_train, dl_valid=None):
+    def fit(self,seed, dl_train, dl_valid=None, dl_test=None):
         train_loader = self._init_data_loader(dl_train, shuffle=True, drop_last=True)
         best_param = None
-        tagName_ic = 'metrics_ic_seed_36'
-        tagName_icir = 'metrics_icir_seed_36'
+        tagName_ic = 'metrics_ic_seed_'+str(seed)
+        tagName_icir = 'metrics_icir_seed_'+str(seed)
         # 未训练时的数据指标
         if dl_valid:
             self.fitted = 0
@@ -181,7 +182,13 @@ class SequenceModel():
                 writer.add_scalars(tagName_icir, {'valid icir':metrics['ICIR'],'ricir':metrics['RICIR'], 'train_loss':train_loss,'lr': self.lr}, step+1)
                 print("Epoch %d, train_loss %.6f, valid_loss %.6f, valid ic %.4f, icir %.3f, rankic %.4f, rankicir %.3f." % (step+1, train_loss, valid_loss, metrics['IC'],  metrics['ICIR'],  metrics['RIC'],  metrics['RICIR']))
             else: print("Epoch %d, train_loss %.6f" % (step+1, train_loss))
-        
+            # if dl_test:
+            #     predictions, metrics1, test_loss = self.predict(dl_test)
+            #     writer.add_scalars(tagName_ic+'test-f', {'test ic':metrics1['IC'],'ric':metrics1['RIC'], 'train_loss':train_loss, 'test_loss':test_loss}, step+1)
+            #     writer.add_scalars(tagName_icir+'test-f', {'test icir':metrics1['ICIR'],'ricir':metrics1['RICIR'], 'train_loss':train_loss}, step+1)
+            #     print("Epoch %d, train_loss %.6f, test_loss %.6f, test ic %.4f, icir %.3f, rankic %.4f, rankicir %.3f." % (step+1, train_loss, test_loss, metrics1['IC'],  metrics1['ICIR'],  metrics1['RIC'],  metrics1['RICIR']))
+            # else: print("Epoch %d, train_loss %.6f" % (step+1, train_loss))
+
             if train_loss <= self.train_stop_loss_thred:
                 best_param = copy.deepcopy(self.model.state_dict())
                 torch.save(best_param, f'{self.save_path}/{self.save_prefix}_{self.seed}.pkl')

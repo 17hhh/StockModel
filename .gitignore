@@ -21,10 +21,14 @@ qlib/
 # 忽略所有 .pyc 文件
 *.pyc
 
+MASTER/model*
+myTransformer/model*
+
+
 #忽略tensorboard日志文件
-myTransformer/runs
-MASTER/runs
-DTML/runs
+myTransformer/runs*
+MASTER/runs*
+DTML/runs*
 
 #忽略tensorboard日志文件
 myTransformer/params_log
@@ -36,6 +40,7 @@ DTML/params_log
 
 # 忽略所有 .vscode 目录
 MASTER/.vscode/
+myTransformer/.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -46,4 +51,5 @@ __pycache__/
 *.lock
 
 MASTER/data/
+
 

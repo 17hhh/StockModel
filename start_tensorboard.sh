@@ -1,11 +1,18 @@
 #!/bin/bash
 
 # 设置TensorBoard日志目录和端口
-# LOG_DIR="~/proj/StockModels/myTransformer/runs/my_experiment"  # 替换为你的TensorBoard日志目录
-LOG_DIR="~/proj/StockModels/MASTER/runs/my_experiment"  # 替换为你的TensorBoard日志目录
+# LOG_DIR="~/proj/StockModels/myTransformer/runs/my_experiment"  # 替换为你的TensorBoard日志目录 端口6009
+# LOG_DIR="~/proj/StockModels/MASTER/runs120/my_experiment"  # 替换为你的TensorBoard日志目录 端口6007
+# LOG_DIR="~/proj/StockModels/MASTER/runs25225/my_experiment"  # 替换为你的TensorBoard日志目录 端口60225 去掉了master中SAttention模块
+# LOG_DIR="~/proj/StockModels/MASTER/runs25226/my_experiment"  # 替换为你的TensorBoard日志目录 端口60226 去掉了master中TAttention模块
+# LOG_DIR="~/proj/StockModels/MASTER/runs25227/my_experiment"  # 替换为你的TensorBoard日志目录 端口60226 去掉了master中SAttention模块 0.95&epoch=40
+# LOG_DIR="~/proj/StockModels/MASTER/runs25227-1/my_experiment"  # 替换为你的TensorBoard日志目录 端口60226 去掉了master中TAttention模块 0.95&epoch=40
+LOG_DIR="~/proj/StockModels/MASTER/runs-out/runs25310/S-atten"  # 替换为你的TensorBoard日志目录 端口60226 只用master中两个SAttention模块 0.97&epoch=40
+
+
 # LOG_DIR="~/proj/StockModels/DTML/runs/my_experiment"  # 替换为你的TensorBoard日志目录
 
-PORT=6006                    # TensorBoard服务器监听的端口
+PORT=60310          # TensorBoard服务器监听的端口
 
 # 检查TensorBoard是否已安装
 # if ! command -v tensorboard &> /dev/null

@@ -30,10 +30,10 @@ if universe == 'csi300':
 elif universe == 'csi800':
     beta = 2
 
-n_epoch = 150
+n_epoch = 40
 lr = 1e-5
 GPU = 0
-train_stop_loss_thred = 0.05
+train_stop_loss_thred = 0.95
 
 
 ic = []
@@ -43,8 +43,8 @@ ricir = []
 
 # Training
 ######################################################################################
-# for seed in [0,1, 2, 3, 4]:
-for seed in [42]:
+for seed in [0,1, 2, 3, 4]:
+# for seed in [42]:
     model = TransformerModel(
         d_feat = d_feat, d_model = d_model, n_heads=n_heads,dropout=dropout, lr = lr, n_epochs=n_epoch, GPU = GPU, seed = seed, train_stop_loss_thred = train_stop_loss_thred,
         save_path='model', save_prefix=f'{universe}_{prefix}'
@@ -52,7 +52,7 @@ for seed in [42]:
 
     start = time.time()
     # Train
-    model.fit(dl_train, dl_valid)
+    model.fit(dl_train, dl_valid, seed=seed)
 
     print("Model Trained.")
 

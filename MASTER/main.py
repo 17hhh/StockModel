@@ -33,10 +33,10 @@ if universe == 'csi300':
 elif universe == 'csi800':
     beta = 2
 
-n_epoch = 1500
+n_epoch = 40
 lr = 1e-5
 GPU = 0
-train_stop_loss_thred = 0.005
+train_stop_loss_thred = 0.95
 
 
 ic = []
@@ -46,8 +46,8 @@ ricir = []
 
 # Training
 ######################################################################################
-# for seed in [0,1, 2, 3, 4]:
-for seed in [36]:
+for seed in [0,1, 2, 3, 4]:
+# for seed in [36]:
     model = MASTERModel(
         d_feat = d_feat, d_model = d_model, t_nhead = t_nhead, s_nhead = s_nhead, T_dropout_rate=dropout, S_dropout_rate=dropout,
         beta=beta, gate_input_end_index=gate_input_end_index, gate_input_start_index=gate_input_start_index,
@@ -57,17 +57,19 @@ for seed in [36]:
 
     start = time.time()
     # Train
-    model.fit(dl_train, dl_valid)
+    model.fit(seed, dl_train, dl_valid, dl_test)
 
     print("Model Trained.")
 
     # Test
-    predictions, metrics = model.predict(dl_test)
+    predictions, metrics, test_loss = model.predict(dl_test)
     
     running_time = time.time()-start
     
     print('Seed: {:d} time cost : {:.2f} sec'.format(seed, running_time))
-    print(metrics)
+    print('metrics:',metrics)
+    print('test_loss:',test_loss)
+    
 
     ic.append(metrics['IC'])
     icir.append(metrics['ICIR'])

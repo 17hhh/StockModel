@@ -7,7 +7,7 @@ from torch.utils.data import Sampler
 import torch
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
-writer = SummaryWriter('/home/hhh/proj/StockModels/myTransformer/runs/my_experiment')
+writer = SummaryWriter('/home/hhh/proj/StockModels/myTransformer/runs-out/runs25302/')
 
 def calc_ic(pred, label):
     df = pd.DataFrame({'pred':pred, 'label':label})
@@ -99,6 +99,7 @@ class SequenceModel():
 
         for data in data_loader:
             data = torch.squeeze(data, dim=0)
+            # print("Training epoch...",data.shape)
             '''
             data.shape: (N, T, F) 287,8,222
             N - number of stocks
@@ -156,12 +157,12 @@ class SequenceModel():
         self.model.load_state_dict(torch.load(param_path, map_location=self.device))
         self.fitted = 'Previously trained.'
 
-    def fit(self, dl_train, dl_valid=None):
+    def fit(self, dl_train, dl_valid=None,seed=None):
         train_loader = self._init_data_loader(dl_train, shuffle=True, drop_last=True)
         best_param = None
 
-        tagName_ic = 'metrics_ic_seed_42'
-        tagName_icir = 'metrics_icir_seed_42'
+        tagName_ic = 'metrics_ic_seed_'+str(seed)
+        tagName_icir = 'metrics_icir_seed_'+str(seed)
         # 未训练时的数据指标
         if dl_valid:
             self.fitted = 0
